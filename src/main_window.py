@@ -6,7 +6,9 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QAction,
                              QToolBar,
                              QLabel,
-                             QMessageBox)
+                             QMessageBox,
+                             QTableView)
+from resources.models import StockMonitoringTableModel
 
 ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM).'
 
@@ -24,13 +26,19 @@ class Sammy(QMainWindow):
 
     def _widgets(self):
 
+        self.stock_table_model = StockMonitoringTableModel()
+        self.stockmonitoringTableView = QTableView()
         self.statusbarLabel = QLabel()
 
     def _properties(self):
 
         # Main window
         self.setWindowTitle('Sammy | What stocks to buy today?')
+        self.setCentralWidget(self.stockmonitoringTableView)
         self.resize(920, 457)
+
+        # Central Widget
+        self.stockmonitoringTableView.setModel(self.stock_table_model)
 
     def _actions(self):
 
