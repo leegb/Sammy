@@ -1,2 +1,3 @@
 *.xml
 .idea/Sammy.iml
+*.pyc
