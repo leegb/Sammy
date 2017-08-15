@@ -45,7 +45,7 @@ class Sammy(QMainWindow):
         # File menu actions
         self.newAction = QAction("&New", self,
                                  shortcut=QKeySequence.New,
-                                 statusTip='Create a stock to monitor',
+                                 statusTip='Add a stock to monitor',
                                  toolTip='New',
                                  triggered=self.on_new_action)
         self.exitAction = QAction("E&xit", self,
@@ -100,7 +100,12 @@ class Sammy(QMainWindow):
     # Actions
     def on_new_action(self):
 
-        print('TODO: show a new dialog')
+        from src.dialogs.new import New
+
+        dialog = New()
+
+        if dialog.exec():
+            print('hi new!')
 
     def on_edit_action(self):
 
