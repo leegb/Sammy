@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (QDialog,
                              QHBoxLayout,
                              QVBoxLayout,
                              QPushButton)
+from resources.models import (StockListModel)
 
 
 class New(QDialog):
@@ -26,6 +27,9 @@ class New(QDialog):
         self.slashLabel = QLabel('/')
         self.targetpriceLineEdit = QLineEdit()
         self.addPushButton = QPushButton('&Add')
+
+        # Models
+        self.stocklist_model = StockListModel()
 
     def _layout(self):
 
@@ -51,9 +55,19 @@ class New(QDialog):
 
     def _properties(self):
 
+        self.stocklistComboBox.setModel(self.stocklist_model)
         self.buybelowLineEdit.setPlaceholderText('Buy Below')
         self.targetpriceLineEdit.setPlaceholderText('Target Price')
+        #self.addPushButton.setEnabled(False)
+
+        # Main dialog
+        self.setWindowTitle('Add a stock to monitor')
+        self.resize(286, 71)
 
     def _connections(self):
 
-        pass
+        self.addPushButton.clicked.connect(self.accept)
+
+    def resizeEvent(self, event):
+
+        print('w x h -> {0} x {1}'.format(self.width(), self.height()))

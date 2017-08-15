@@ -2,7 +2,8 @@
 
 from PyQt5.QtCore import (Qt,
                           QModelIndex,
-                          QAbstractTableModel)
+                          QAbstractTableModel,  # for table
+                          QAbstractListModel)   # for list
 
 
 class StockMonitoringTableModel(QAbstractTableModel):
@@ -23,8 +24,28 @@ class StockMonitoringTableModel(QAbstractTableModel):
 
     def rowCount(self, parent):
 
-        return 5
+        return 0
 
     def columnCount(self, parent):
 
         return 7
+
+
+# TODO: have a good mechanism and naming convention for your models
+class StockListModel(QAbstractListModel):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.__stock_symbols = ['FGEN', 'CEB', 'MEG', 'COSCO']
+
+    def data(self, index, role):
+
+        if role == Qt.DisplayRole:
+            row = index.row()
+            value = self.__stock_symbols[row]
+            return value
+
+    def rowCount(self, parent):
+
+        return len(self.__stock_symbols)
+
