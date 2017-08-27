@@ -1,5 +1,6 @@
 # Main UI
 
+from collections import OrderedDict
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QMainWindow,
@@ -9,6 +10,8 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QMessageBox,
                              QTableView)
 from resources.models import (StockMonitoringTableModel)
+from resources.constant import (ORDERED_COMPANY,
+                                RECORD)
 import sammy
 
 ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM).'
@@ -39,7 +42,7 @@ class Sammy(QMainWindow):
         self.resize(920, 457)
 
         # Central Widget
-        self.stockmonitoringTableView.setModel(self.stock_table_model)
+        #self.stockmonitoringTableView.setModel(self.stock_table_model)
 
     def _actions(self):
 
@@ -127,9 +130,16 @@ class Sammy(QMainWindow):
     # TODO: for cleaning
     def actions(self, stock_code, buy_below, target_price):
         company = sammy.stock(stock_code)
+
         company['BB'] = buy_below
         company['TP'] = target_price
         as_of = sammy.as_of()
+
+        # Add new record to TableView
+        #print(self.stock_table_model.record)
+        #print(company)
+        #self.stock_table_model.record[0][0] = company.values()
+        #print(company.values())
 
         if company['price'] < company['BB']:  # BUY
             action = 'Buy'
@@ -137,6 +147,22 @@ class Sammy(QMainWindow):
             action = 'Hold'
         elif company['price'] >= company['TP']:  # SELL
             action = 'Sell'
+
+        # For transfer to TableView
+        ORDERED_COMPANY['company'] = company['company']
+        ORDERED_COMPANY['symbol'] = company['symbol']
+        ORDERED_COMPANY['price'] = company['price']
+        ORDERED_COMPANY['BB'] = company['BB']
+        ORDERED_COMPANY['TP'] = company['TP']
+        ORDERED_COMPANY['action'] = action
+        ORDERED_COMPANY['remarks'] = 'Mag-impake ka na!!!'
+
+        RECORD.append(list(ORDERED_COMPANY.values()))
+        self.stock_table_model.insertRows(len(RECORD), 1)
+        self.stockmonitoringTableView.setModel(self.stock_table_model)
+
+        print(ORDERED_COMPANY)
+        print(list(ORDERED_COMPANY.values()))
 
         print('Company: {0} {1}/{2}'.format(company['company'], company['BB'], company['TP']))
         print('Market price: {0} ({1})'.format(company['price'], company['change']))

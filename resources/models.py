@@ -4,13 +4,15 @@ from PyQt5.QtCore import (Qt,
                           QModelIndex,
                           QAbstractTableModel,  # for table
                           QAbstractListModel)   # for list
+from resources.constant import (ORDERED_COMPANY,
+                                RECORD)
 
 
 class StockMonitoringTableModel(QAbstractTableModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.header = ['Company', 'Stock Code', 'Market Price', 'Buy Below', 'Target Price', 'Action', 'Remarks']
+        self.header = ['Company', 'Symbol', 'Market Price', 'Buy Below', 'Target Price', 'Action', 'Remarks']
 
     def headerData(self, section, orientation, role):
 
@@ -20,15 +22,26 @@ class StockMonitoringTableModel(QAbstractTableModel):
 
     def data(self, index, role):
 
-        pass
+        if role == Qt.DisplayRole:
+            row = index.row()
+            col = index.column()
+            value = RECORD[row][col]
+            return value
 
     def rowCount(self, parent):
 
-        return 0
+        return len(RECORD)
 
     def columnCount(self, parent):
 
         return 7
+
+    def insertRows(self, position, rows, parent=QModelIndex()):
+        self.beginInsertRows(parent, position, position + rows - 1)
+        # Still works!
+        self.endInsertRows()
+        return True
+
 
 
 # TODO: have a good mechanism and naming convention for your models
