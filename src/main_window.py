@@ -27,12 +27,14 @@ class Sammy(QMainWindow):
         self._menus()
         self._toolbar()
         self._statusbar()
+        self.check_REST_API()
 
     def _widgets(self):
 
         self.stock_table_model = StockMonitoringTableModel()
         self.stockmonitoringTableView = QTableView()
         self.statusbarLabel = QLabel()
+        self.statusNormalLabel = QLabel()
 
     def _properties(self):
 
@@ -97,9 +99,22 @@ class Sammy(QMainWindow):
 
     def _statusbar(self):
 
+        # temp, normal, permanent
         self.statusbar = self.statusBar()
         self.statusbar.addPermanentWidget(self.statusbarLabel)
+        self.statusbar.addPermanentWidget(self.statusNormalLabel)
         self.statusbar.showMessage('Ready', 7000)
+
+    def check_REST_API(self):
+
+        # TODO: always check the API if active or not every 2-3 minutes
+        try:
+            timestamp = sammy.as_of()
+            self.statusNormalLabel.setText('Online')
+            print(timestamp)
+        except Exception as e:
+            self.statusNormalLabel.setText('Offline')
+            print(e)
 
     # Actions
     def on_new_action(self):
@@ -155,7 +170,7 @@ class Sammy(QMainWindow):
         ORDERED_COMPANY['BB'] = company['BB']
         ORDERED_COMPANY['TP'] = company['TP']
         ORDERED_COMPANY['action'] = action
-        ORDERED_COMPANY['remarks'] = 'Mag-impake ka na!!!'
+        ORDERED_COMPANY['remarks'] = 'dailypik.com/undervalued...'
 
         RECORD.append(list(ORDERED_COMPANY.values()))
         self.stock_table_model.insertRows(len(RECORD), 1)
