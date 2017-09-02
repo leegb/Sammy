@@ -1,5 +1,6 @@
 Sammy
 ---
+[![Join the chat at https://gitter.im/CodersGym/Sammy](https://badges.gitter.im/CodersGym/Sammy.svg)](https://gitter.im/CodersGym/Sammy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 Sammy is a monitoring tool for stock market investors using the Strategic Averaging Method (SAM). It uses the Phisix RESTful API to get the latest stock quote in the Philippine Stock Exchange Index (PSEi).
 
@@ -8,7 +9,7 @@ Sammy is a monitoring tool for stock market investors using the Strategic Averag
 Feature(s)
 ---
 
-* Easily identify what stocks to buy based on its current market price.
+* Easily identify what stocks to buy based on its current market price and Buy Below/Target Price.
 
 Usage
 ---
