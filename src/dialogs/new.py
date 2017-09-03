@@ -10,6 +10,10 @@ from PyQt5.QtWidgets import (QDialog,
 from resources.models import (StockListModel)
 
 
+# [x] TODO: Add a 'Cancel' button
+# [] TODO: make this dialog non-blocking
+# [x] TODO: disable the 'Add' button upon showing up
+# [] TODO: Buy Below/Target Price should only accept floating numbers
 class New(QDialog):
 
     def __init__(self, parent=None):
@@ -27,6 +31,7 @@ class New(QDialog):
         self.slashLabel = QLabel('/')
         self.targetpriceLineEdit = QLineEdit()
         self.addPushButton = QPushButton('&Add')
+        self.cancelPushButton = QPushButton('&Cancel')
 
         # Models
         self.stocklist_model = StockListModel()
@@ -44,6 +49,7 @@ class New(QDialog):
         row2 = QHBoxLayout()
         row2.addStretch(1)
         row2.addWidget(self.addPushButton)
+        row2.addWidget(self.cancelPushButton)
 
         # Layout vertically row1 and row2
         rows = QVBoxLayout()
@@ -58,7 +64,7 @@ class New(QDialog):
         self.stocklistComboBox.setModel(self.stocklist_model)
         self.buybelowLineEdit.setPlaceholderText('Buy Below')
         self.targetpriceLineEdit.setPlaceholderText('Target Price')
-        #self.addPushButton.setEnabled(False)
+        self.addPushButton.setEnabled(False)
 
         # Main dialog
         self.setWindowTitle('Add a stock to monitor')
@@ -67,6 +73,15 @@ class New(QDialog):
     def _connections(self):
 
         self.addPushButton.clicked.connect(self.accept)
+        self.buybelowLineEdit.textChanged.connect(self.on_lineEdit_textChanged)
+        self.targetpriceLineEdit.textChanged.connect(self.on_lineEdit_textChanged)
+
+    def on_lineEdit_textChanged(self):
+
+        if not self.buybelowLineEdit.text() == '' and not self.targetpriceLineEdit.text() == '':
+            self.addPushButton.setEnabled(True)
+        else:
+            self.addPushButton.setEnabled(False)
 
     def resizeEvent(self, event):
 

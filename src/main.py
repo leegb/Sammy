@@ -14,6 +14,8 @@ Author: mokachokokarbon <tokidokitalkyou@gmail.com>
 import sys
 from PyQt5.QtWidgets import QApplication
 
+sys.path.append('..')
+
 APP = QApplication(sys.argv)
 
 if __name__ == '__main__':
@@ -21,4 +23,3 @@ if __name__ == '__main__':
     window = Sammy()
     window.show()
     APP.exec()
-

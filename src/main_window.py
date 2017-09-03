@@ -1,6 +1,5 @@
 # Main UI
 
-from collections import OrderedDict
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QMainWindow,
@@ -124,6 +123,7 @@ class Sammy(QMainWindow):
         dialog = New()
         if dialog.exec():
             # TODO: for cleaning
+            #dialog.addPushButton.setEnabled(False)
             symbol = dialog.stocklistComboBox.currentText()
             buy_below = float(dialog.buybelowLineEdit.text())
             target_price = float(dialog.targetpriceLineEdit.text())
@@ -170,7 +170,7 @@ class Sammy(QMainWindow):
         ORDERED_COMPANY['BB'] = company['BB']
         ORDERED_COMPANY['TP'] = company['TP']
         ORDERED_COMPANY['action'] = action
-        ORDERED_COMPANY['remarks'] = 'dailypik.com/undervalued...'
+        ORDERED_COMPANY['remarks'] = 'dailypik.com/undervalued-stocks-in-the-philippines-latest-list/'
 
         RECORD.append(list(ORDERED_COMPANY.values()))
         self.stock_table_model.insertRows(len(RECORD), 1)

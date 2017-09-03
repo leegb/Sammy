@@ -43,7 +43,6 @@ class StockMonitoringTableModel(QAbstractTableModel):
         return True
 
 
-
 # TODO: have a good mechanism and naming convention for your models
 class StockListModel(QAbstractListModel):
 
