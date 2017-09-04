@@ -119,11 +119,9 @@ class Sammy(QMainWindow):
     def on_new_action(self):
 
         from src.dialogs.new import New
-
         dialog = New()
+
         if dialog.exec():
-            # TODO: for cleaning
-            #dialog.addPushButton.setEnabled(False)
             symbol = dialog.stocklistComboBox.currentText()
             buy_below = float(dialog.buybelowLineEdit.text())
             target_price = float(dialog.targetpriceLineEdit.text())
@@ -150,12 +148,7 @@ class Sammy(QMainWindow):
         company['TP'] = target_price
         as_of = sammy.as_of()
 
-        # Add new record to TableView
-        #print(self.stock_table_model.record)
-        #print(company)
-        #self.stock_table_model.record[0][0] = company.values()
-        #print(company.values())
-
+        # Determine what action to take based on stock's current market price
         if company['price'] < company['BB']:  # BUY
             action = 'Buy'
         elif company['BB'] <= company['price'] < company['TP']:  # HOLD

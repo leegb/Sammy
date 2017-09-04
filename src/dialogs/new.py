@@ -11,9 +11,7 @@ from resources.models import (StockListModel)
 
 
 # [x] TODO: Add a 'Cancel' button
-# [] TODO: make this dialog non-blocking
-# [x] TODO: disable the 'Add' button upon showing up
-# [] TODO: Buy Below/Target Price should only accept floating numbers
+# [ ] TODO: Buy Below/Target Price should only accept floating numbers
 class New(QDialog):
 
     def __init__(self, parent=None):
@@ -72,11 +70,12 @@ class New(QDialog):
 
     def _connections(self):
 
-        self.addPushButton.clicked.connect(self.accept)
         self.buybelowLineEdit.textChanged.connect(self.on_lineEdit_textChanged)
         self.targetpriceLineEdit.textChanged.connect(self.on_lineEdit_textChanged)
+        self.addPushButton.clicked.connect(self.accept)
+        self.cancelPushButton.clicked.connect(self.close)
 
-    def on_lineEdit_textChanged(self):
+    def on_lineEdit_textChanged(self) -> None:
 
         if not self.buybelowLineEdit.text() == '' and not self.targetpriceLineEdit.text() == '':
             self.addPushButton.setEnabled(True)
