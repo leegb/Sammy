@@ -142,40 +142,44 @@ class Sammy(QMainWindow):
 
     # TODO: for cleaning
     def actions(self, stock_code, buy_below, target_price):
-        company = sammy.stock(stock_code)
 
-        company['BB'] = buy_below
-        company['TP'] = target_price
-        as_of = sammy.as_of()
+        try:
+            company = sammy.stock(stock_code)
+            company['BB'] = buy_below
+            company['TP'] = target_price
+            as_of = sammy.as_of()
 
-        # Determine what action to take based on stock's current market price
-        if company['price'] < company['BB']:  # BUY
-            action = 'Buy'
-        elif company['BB'] <= company['price'] < company['TP']:  # HOLD
-            action = 'Hold'
-        elif company['price'] >= company['TP']:  # SELL
-            action = 'Sell'
+            # Determine what action to take based on stock's current market price
+            if company['price'] < company['BB']:  # BUY
+                action = 'Buy'
+            elif company['BB'] <= company['price'] < company['TP']:  # HOLD
+                action = 'Hold'
+            elif company['price'] >= company['TP']:  # SELL
+                action = 'Sell'
 
-        # For transfer to TableView
-        ORDERED_COMPANY['company'] = company['company']
-        ORDERED_COMPANY['symbol'] = company['symbol']
-        ORDERED_COMPANY['price'] = company['price']
-        ORDERED_COMPANY['BB'] = company['BB']
-        ORDERED_COMPANY['TP'] = company['TP']
-        ORDERED_COMPANY['action'] = action
-        ORDERED_COMPANY['remarks'] = 'dailypik.com/undervalued-stocks-in-the-philippines-latest-list/'
+            # For transfer to TableView
+            ORDERED_COMPANY['company'] = company['company']
+            ORDERED_COMPANY['symbol'] = company['symbol']
+            ORDERED_COMPANY['price'] = company['price']
+            ORDERED_COMPANY['BB'] = company['BB']
+            ORDERED_COMPANY['TP'] = company['TP']
+            ORDERED_COMPANY['action'] = action
+            ORDERED_COMPANY['remarks'] = 'dailypik.com/undervalued-stocks-in-the-philippines-latest-list/'
 
-        RECORD.append(list(ORDERED_COMPANY.values()))
-        self.stock_table_model.insertRows(len(RECORD), 1)
-        self.stockmonitoringTableView.setModel(self.stock_table_model)
+            RECORD.append(list(ORDERED_COMPANY.values()))
+            self.stock_table_model.insertRows(len(RECORD), 1)
+            self.stockmonitoringTableView.setModel(self.stock_table_model)
 
-        print(ORDERED_COMPANY)
-        print(list(ORDERED_COMPANY.values()))
+            print(ORDERED_COMPANY)
+            print(list(ORDERED_COMPANY.values()))
 
-        print('Company: {0} {1}/{2}'.format(company['company'], company['BB'], company['TP']))
-        print('Market price: {0} ({1})'.format(company['price'], company['change']))
-        print('Action: {0} {1}'.format(action, company['symbol']))
-        print('Market price as of {}'.format(as_of))
+            print('Company: {0} {1}/{2}'.format(company['company'], company['BB'], company['TP']))
+            print('Market price: {0} ({1})'.format(company['price'], company['change']))
+            print('Action: {0} {1}'.format(action, company['symbol']))
+            print('Market price as of {}'.format(as_of))
+        except Exception as e:
+            self.statusBar.showMessage('Last request to API failed, try again.', 7000)
+            print(e)
 
     # Events
     def resizeEvent(self, event):

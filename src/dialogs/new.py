@@ -1,5 +1,6 @@
 # New dialog
 
+from PyQt5.QtGui import QDoubleValidator
 from PyQt5.QtWidgets import (QDialog,
                              QComboBox,
                              QLineEdit,
@@ -11,7 +12,7 @@ from resources.models import (StockListModel)
 
 
 # [x] TODO: Add a 'Cancel' button
-# [ ] TODO: Buy Below/Target Price should only accept floating numbers
+# [x] TODO: Buy Below/Target Price should only accept floating numbers
 class New(QDialog):
 
     def __init__(self, parent=None):
@@ -24,6 +25,7 @@ class New(QDialog):
 
     def _widgets(self):
 
+        self.double_input_validator = QDoubleValidator()
         self.stocklistComboBox = QComboBox()
         self.buybelowLineEdit = QLineEdit()
         self.slashLabel = QLabel('/')
@@ -59,9 +61,12 @@ class New(QDialog):
 
     def _properties(self):
 
+        self.double_input_validator.setBottom(0.0)
         self.stocklistComboBox.setModel(self.stocklist_model)
         self.buybelowLineEdit.setPlaceholderText('Buy Below')
         self.targetpriceLineEdit.setPlaceholderText('Target Price')
+        self.buybelowLineEdit.setValidator(self.double_input_validator)
+        self.targetpriceLineEdit.setValidator(self.double_input_validator)
         self.addPushButton.setEnabled(False)
 
         # Main dialog
