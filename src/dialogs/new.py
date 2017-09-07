@@ -11,8 +11,6 @@ from PyQt5.QtWidgets import (QDialog,
 from resources.models import (StockListModel)
 
 
-# [x] TODO: Add a 'Cancel' button
-# [x] TODO: Buy Below/Target Price should only accept floating numbers
 class New(QDialog):
 
     def __init__(self, parent=None):
@@ -81,11 +79,10 @@ class New(QDialog):
         self.cancelPushButton.clicked.connect(self.close)
 
     def on_lineEdit_textChanged(self) -> None:
+        """ Enable or disable the 'Add' button """
 
-        if not self.buybelowLineEdit.text() == '' and not self.targetpriceLineEdit.text() == '':
-            self.addPushButton.setEnabled(True)
-        else:
-            self.addPushButton.setEnabled(False)
+        enabled = True if self.buybelowLineEdit.text() and self.targetpriceLineEdit.text() else False
+        self.addPushButton.setEnabled(enabled)
 
     def resizeEvent(self, event):
 
