@@ -34,7 +34,7 @@ class StockMonitoringTableModel(QAbstractTableModel):
 
     def columnCount(self, parent):
 
-        return 7
+        return len(self.header)
 
     def insertRows(self, position, rows, parent=QModelIndex()):
         self.beginInsertRows(parent, position, position + rows - 1)
@@ -48,7 +48,7 @@ class StockListModel(QAbstractListModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.__stock_symbols = ['FGEN', 'CEB', 'MEG', 'COSCO']
+        self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB']
 
     def data(self, index, role):
 

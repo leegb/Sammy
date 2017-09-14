@@ -16,6 +16,7 @@ import sammy
 ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM).'
 
 
+# [] TODO: restore Geometry and Position
 class Sammy(QMainWindow):
 
     def __init__(self, parent=None):
@@ -43,7 +44,7 @@ class Sammy(QMainWindow):
         self.resize(920, 457)
 
         # Central Widget
-        #self.stockmonitoringTableView.setModel(self.stock_table_model)
+        self.stockmonitoringTableView.setModel(self.stock_table_model)
 
     def _actions(self):
 
@@ -160,7 +161,7 @@ class Sammy(QMainWindow):
             # For transfer to TableView
             ORDERED_COMPANY['company'] = company['company']
             ORDERED_COMPANY['symbol'] = company['symbol']
-            ORDERED_COMPANY['price'] = company['price']
+            ORDERED_COMPANY['price'] = '{0} ({1})'.format(company['price'], company['change'])
             ORDERED_COMPANY['BB'] = company['BB']
             ORDERED_COMPANY['TP'] = company['TP']
             ORDERED_COMPANY['action'] = action
