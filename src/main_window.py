@@ -1,6 +1,7 @@
 # Main UI
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import (Qt,
+                          QSettings)
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (QMainWindow,
                              QAction,
@@ -13,14 +14,15 @@ from resources.constant import (ORDERED_COMPANY,
                                 RECORD)
 import sammy
 
-ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM).'
+ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM) aka flipping.'
 
 
-# [] TODO: restore Geometry and Position
+# [x] TODO: restore Geometry and Position
 class Sammy(QMainWindow):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.companies = []
         self._widgets()
         self._properties()
         self._actions()
@@ -28,6 +30,7 @@ class Sammy(QMainWindow):
         self._toolbar()
         self._statusbar()
         self.check_REST_API()
+        self._read_settings()
 
     def _widgets(self):
 
@@ -116,6 +119,28 @@ class Sammy(QMainWindow):
             self.statusNormalLabel.setText('Offline')
             print(e)
 
+    def _read_settings(self):
+
+        settings = QSettings('CodersGym', 'Sammy')
+        self.restoreGeometry(settings.value('sammy_geometry', self.saveGeometry()))
+        self.restoreState(settings.value('sammy_state', self.saveState()))
+
+        # Reload previously monitored companies
+        self.companies = settings.value('companies', self.companies)
+        for raw_quote in self.companies:
+            self.actions(raw_quote['symbol'],
+                         raw_quote['buy_below'],
+                         raw_quote['target_price'])
+        print(self.companies)
+
+    def _write_settings(self):
+
+        settings = QSettings('CodersGym', 'Sammy')
+        settings.setValue('sammy_geometry', self.saveGeometry())
+        settings.setValue('sammy_state', self.saveState())
+        settings.setValue('companies', self.companies)
+        print(self.companies)
+
     # Actions
     def on_new_action(self):
 
@@ -131,7 +156,12 @@ class Sammy(QMainWindow):
                          'buy_below': buy_below,
                          'target_price': target_price}
 
-            self.actions(raw_quote['symbol'], raw_quote['buy_below'], raw_quote['target_price'])
+            self.actions(raw_quote['symbol'],
+                         raw_quote['buy_below'],
+                         raw_quote['target_price'])
+
+            # save user input
+            self.companies.append(raw_quote)
 
     def on_edit_action(self):
 
@@ -141,10 +171,11 @@ class Sammy(QMainWindow):
 
         QMessageBox.about(self, 'About Sammy', ABOUT)
 
-    # TODO: for cleaning
+    # TODO: for cleaning, this is ugly
     def actions(self, stock_code, buy_below, target_price):
 
         try:
+            # [] TODO: can this be remove? #looksredundant
             company = sammy.stock(stock_code)
             company['BB'] = buy_below
             company['TP'] = target_price
@@ -186,6 +217,10 @@ class Sammy(QMainWindow):
     def resizeEvent(self, event):
 
         print('w x h -> {0} x {1}'.format(self.width(), self.height()))
+
+    def closeEvent(self, e):
+
+        self._write_settings()
 
 
 

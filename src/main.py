@@ -1,6 +1,6 @@
 """
 Sammy | What stocks to buy today?
-    A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM).
+    A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM) aka flipping.
 
 Feature(s):
     * Easily identify what stocks to buy based on its current market price
