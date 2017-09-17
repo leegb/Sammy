@@ -4,7 +4,7 @@ from PyQt5.QtCore import (Qt,
                           QModelIndex,
                           QAbstractTableModel,  # for table
                           QAbstractListModel)   # for list
-from resources.constant import (ORDERED_COMPANY,
+from resources.constant import (RAW_RECORD,
                                 RECORD)
 
 
@@ -49,6 +49,7 @@ class StockListModel(QAbstractListModel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB']
+        self.__stock_symbols.sort()
 
     def data(self, index, role):
 

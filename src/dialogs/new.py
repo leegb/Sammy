@@ -59,10 +59,10 @@ class New(QDialog):
 
     def _properties(self):
 
-        self.double_input_validator.setBottom(0.0)
         self.stocklistComboBox.setModel(self.stocklist_model)
         self.buybelowLineEdit.setPlaceholderText('Buy Below')
         self.targetpriceLineEdit.setPlaceholderText('Target Price')
+        self.double_input_validator.setBottom(0.0)
         self.buybelowLineEdit.setValidator(self.double_input_validator)
         self.targetpriceLineEdit.setValidator(self.double_input_validator)
         self.addPushButton.setEnabled(False)

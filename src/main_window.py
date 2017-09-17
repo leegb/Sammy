@@ -10,14 +10,13 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QMessageBox,
                              QTableView)
 from resources.models import (StockMonitoringTableModel)
-from resources.constant import (ORDERED_COMPANY,
+from resources.constant import (RAW_RECORD,
                                 RECORD)
 import sammy
 
 ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM) aka flipping.'
 
 
-# [x] TODO: restore Geometry and Position
 class Sammy(QMainWindow):
 
     def __init__(self, parent=None):
@@ -175,48 +174,38 @@ class Sammy(QMainWindow):
     def actions(self, stock_code, buy_below, target_price):
 
         try:
-            # [] TODO: can this be remove? #looksredundant
+            # Request query to Phisix API
             company = sammy.stock(stock_code)
-            company['BB'] = buy_below
-            company['TP'] = target_price
             as_of = sammy.as_of()
 
             # Determine what action to take based on stock's current market price
-            if company['price'] < company['BB']:  # BUY
+            if company['price'] < buy_below:  # BUY
                 action = 'Buy'
-            elif company['BB'] <= company['price'] < company['TP']:  # HOLD
+            elif buy_below <= company['price'] < target_price:  # HOLD
                 action = 'Hold'
-            elif company['price'] >= company['TP']:  # SELL
+            elif company['price'] >= target_price:  # SELL
                 action = 'Sell'
 
-            # For transfer to TableView
-            ORDERED_COMPANY['company'] = company['company']
-            ORDERED_COMPANY['symbol'] = company['symbol']
-            ORDERED_COMPANY['price'] = '{0} ({1})'.format(company['price'], company['change'])
-            ORDERED_COMPANY['BB'] = company['BB']
-            ORDERED_COMPANY['TP'] = company['TP']
-            ORDERED_COMPANY['action'] = action
-            ORDERED_COMPANY['remarks'] = 'dailypik.com/undervalued-stocks-in-the-philippines-latest-list/'
+            # Packaging values in ordered
+            RAW_RECORD['company'] = company['company']
+            RAW_RECORD['symbol'] = company['symbol']
+            RAW_RECORD['price'] = '{0} ({1})'.format(company['price'], company['change'])
+            RAW_RECORD['BB'] = buy_below
+            RAW_RECORD['TP'] = target_price
+            RAW_RECORD['action'] = action
+            RAW_RECORD['remarks'] = 'dailypik.com/undervalued-stocks-in-the-philippines-latest-list/'
 
-            RECORD.append(list(ORDERED_COMPANY.values()))
+            # Transfer packed record to the table model
+            RECORD.append(list(RAW_RECORD.values()))
             self.stock_table_model.insertRows(len(RECORD), 1)
             self.stockmonitoringTableView.setModel(self.stock_table_model)
 
-            print(ORDERED_COMPANY)
-            print(list(ORDERED_COMPANY.values()))
+            # Display market time
+            self.statusbar.showMessage('Market price as of {}'.format(as_of))
 
-            print('Company: {0} {1}/{2}'.format(company['company'], company['BB'], company['TP']))
-            print('Market price: {0} ({1})'.format(company['price'], company['change']))
-            print('Action: {0} {1}'.format(action, company['symbol']))
-            print('Market price as of {}'.format(as_of))
         except Exception as e:
-            self.statusBar.showMessage('Last request to API failed, try again.', 7000)
+            self.statusbar.showMessage('Last request to API failed, try again.', 7000)
             print(e)
-
-    # Events
-    def resizeEvent(self, event):
-
-        print('w x h -> {0} x {1}'.format(self.width(), self.height()))
 
     def closeEvent(self, e):
 

@@ -1,5 +1,5 @@
 from collections import OrderedDict
 
-ORDERED_COMPANY = OrderedDict()
+RAW_RECORD = OrderedDict()
 RECORD = []
 
