@@ -4,7 +4,8 @@ from PyQt5.QtCore import (Qt,
                           QModelIndex,
                           QAbstractTableModel,  # for table
                           QAbstractListModel)   # for list
-from resources.constant import RECORD
+from resources.constant import (COMPANIES,
+                                RECORD)
 
 
 # [x] TODO: make the Remarks column editable
@@ -38,6 +39,8 @@ class StockMonitoringTableModel(QAbstractTableModel):
             row = index.row()
             col = index.column()
             RECORD[row][col] = value
+            COMPANIES[row]['remarks'] = value
+            print(COMPANIES)
             return True
 
     def flags(self, index):

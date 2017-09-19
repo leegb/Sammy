@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QTableView)
 from resources.models import (StockMonitoringTableModel)
 from resources.constant import (ABOUT,
+                                COMPANIES,
                                 RAW_RECORD,
                                 RECORD)
 import sammy
@@ -142,14 +143,14 @@ class Sammy(QMainWindow):
         settings = QSettings('CodersGym', 'Sammy')
         self.restoreGeometry(settings.value('sammy_geometry', self.saveGeometry()))
         self.restoreState(settings.value('sammy_state', self.saveState()))
+        companies = settings.value('COMPANIES', COMPANIES)
 
         # Reload previously monitored companies
-        self.companies = settings.value('companies', self.companies)
-        for raw_quote in self.companies:
+        for raw_quote in companies:
             self.actions(raw_quote['symbol'],
                          raw_quote['buy_below'],
-                         raw_quote['target_price'])
-        print(self.companies)
+                         raw_quote['target_price'],
+                         raw_quote['remarks'])
 
     # [] TODO: self.companies doesn't update when the user edit something in the table
     def _write_settings(self):
@@ -157,8 +158,7 @@ class Sammy(QMainWindow):
         settings = QSettings('CodersGym', 'Sammy')
         settings.setValue('sammy_geometry', self.saveGeometry())
         settings.setValue('sammy_state', self.saveState())
-        settings.setValue('companies', self.companies)
-        print(self.companies)
+        settings.setValue('COMPANIES', COMPANIES)
 
     # Actions
     def on_new_action(self):
@@ -179,23 +179,21 @@ class Sammy(QMainWindow):
                          raw_quote['buy_below'],
                          raw_quote['target_price'])
 
-            # Save user input
-            self.companies.append(raw_quote)
-
     def on_edit_action(self):
 
         print('TODO: editing?')
 
-    # [] TODO: if no connection issues, the whole stock list in the table are re-appended
+    # [] TODO: if no connection issues, the whole stock list in the table are re-appended and it crashes!
     def on_refresh_action(self) -> None:
         """ Reload monitored companies. """
 
         self.stockmonitoringTableView.clearSpans()
 
-        for raw_quote in self.companies:
+        for raw_quote in COMPANIES:
             self.actions(raw_quote['symbol'],
                          raw_quote['buy_below'],
-                         raw_quote['target_price'])
+                         raw_quote['target_price'],
+                         raw_quote['remarks'])
         print('Done refreshing')
 
     def on_aboutAction_clicked(self):
@@ -203,13 +201,12 @@ class Sammy(QMainWindow):
         QMessageBox.about(self, 'About Sammy', ABOUT)
 
     # TODO: for cleaning, this is ugly
-    def actions(self, stock_code, buy_below, target_price):
+    def actions(self, stock_code, buy_below, target_price, remarks):
 
         try:
             # Perform query to Phisix API
             company = sammy.stock(stock_code)
             as_of = sammy.as_of()
-            remarks = 'dailypik.com/undervalued...'
 
             # Determine what action to take based on stock's current market price
             if company['price'] < buy_below:  # BUY
@@ -236,13 +233,13 @@ class Sammy(QMainWindow):
             # Display market time
             self.statusbar.showMessage('Market price as of {}'.format(as_of))
 
-            # [] TODO: think how will you retrieve the new value in the main table
-            # # Update self.companies with 'remarks'
-            # raw_quote = {'symbol': stock_code,
-            #              'buy_below': buy_below,
-            #              'target_price': target_price,
-            #              'remarks': remarks}
-            # self.companies.append(raw_quote)
+            # [x] TODO: think how will you retrieve the new value in the main table
+            # Update self.companies with 'remarks'
+            raw_quote = {'symbol': stock_code,
+                         'buy_below': buy_below,
+                         'target_price': target_price,
+                         'remarks': remarks}
+            COMPANIES.append(raw_quote)
 
         except Exception as e:
             self.statusbar.showMessage('Last request to API failed, try again or press F5 to refresh', 7000)
