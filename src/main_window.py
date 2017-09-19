@@ -10,13 +10,15 @@ from PyQt5.QtWidgets import (QMainWindow,
                              QMessageBox,
                              QTableView)
 from resources.models import (StockMonitoringTableModel)
-from resources.constant import (RAW_RECORD,
+from resources.constant import (ABOUT,
+                                RAW_RECORD,
                                 RECORD)
 import sammy
 
-ABOUT = 'A software monitoring tool for stock market investors using the Strategic Averaging Method (SAM) aka flipping.'
 
-
+# [] TODO: removing of stocks in the main table
+# [] TODO: editing of stocks in the table
+# [x] TODO: add a 'Refresh' feature
 class Sammy(QMainWindow):
 
     def __init__(self, parent=None):
@@ -65,6 +67,13 @@ class Sammy(QMainWindow):
         self.editAction = QAction('&Edit', self,
                                   triggered=self.on_edit_action)
 
+        # Tools: actions
+        self.refreshAction = QAction('&Refresh', self,
+                                     shortcut='F5',
+                                     statusTip='Refresh stock table',
+                                     toolTip='Refresh',
+                                     triggered=self.on_refresh_action)
+
         # Help: actions
         self.aboutAction = QAction('&About', self,
                                    triggered=self.on_aboutAction_clicked)
@@ -72,14 +81,18 @@ class Sammy(QMainWindow):
     def _menus(self):
 
         # File: menu
-        self.fileMenu = self.menuBar().addMenu("&File")
+        self.fileMenu = self.menuBar().addMenu('&File')
         self.fileMenu.addAction(self.newAction)
         self.fileMenu.addSeparator()
         self.fileMenu.addAction(self.exitAction)
 
         # Edit: menu
-        self.editMenu = self.menuBar().addMenu("&Edit")
+        self.editMenu = self.menuBar().addMenu('&Edit')
         self.editMenu.addAction(self.editAction)
+
+        # Tools: menu
+        self.toolsMenu = self.menuBar().addMenu('&Tools')
+        self.toolsMenu.addAction(self.refreshAction)
 
         # Help: menu
         self.helpMenu = self.menuBar().addMenu('&Help')
@@ -99,6 +112,12 @@ class Sammy(QMainWindow):
         self.editToolBar.addAction(self.editAction)
         self.addToolBar(Qt.LeftToolBarArea, self.editToolBar)
 
+        # Refresh: toolbar
+        self.refreshToolBar = QToolBar('Refresh')
+        self.refreshToolBar.setMovable(False)
+        self.refreshToolBar.addAction(self.refreshAction)
+        self.addToolBar(Qt.LeftToolBarArea, self.refreshToolBar)
+
     def _statusbar(self):
 
         # temp, normal, permanent
@@ -109,7 +128,7 @@ class Sammy(QMainWindow):
 
     def check_REST_API(self):
 
-        # TODO: always check the API if active or not every 2-3 minutes
+        # [] TODO: always check the API if active or not every 2-3 minutes
         try:
             timestamp = sammy.as_of()
             self.statusNormalLabel.setText('Online')
@@ -132,6 +151,7 @@ class Sammy(QMainWindow):
                          raw_quote['target_price'])
         print(self.companies)
 
+    # [] TODO: self.companies doesn't update when the user edit something in the table
     def _write_settings(self):
 
         settings = QSettings('CodersGym', 'Sammy')
@@ -159,12 +179,24 @@ class Sammy(QMainWindow):
                          raw_quote['buy_below'],
                          raw_quote['target_price'])
 
-            # save user input
+            # Save user input
             self.companies.append(raw_quote)
 
     def on_edit_action(self):
 
         print('TODO: editing?')
+
+    # [] TODO: if no connection issues, the whole stock list in the table are re-appended
+    def on_refresh_action(self) -> None:
+        """ Reload monitored companies. """
+
+        self.stockmonitoringTableView.clearSpans()
+
+        for raw_quote in self.companies:
+            self.actions(raw_quote['symbol'],
+                         raw_quote['buy_below'],
+                         raw_quote['target_price'])
+        print('Done refreshing')
 
     def on_aboutAction_clicked(self):
 
@@ -174,9 +206,10 @@ class Sammy(QMainWindow):
     def actions(self, stock_code, buy_below, target_price):
 
         try:
-            # Request query to Phisix API
+            # Perform query to Phisix API
             company = sammy.stock(stock_code)
             as_of = sammy.as_of()
+            remarks = 'dailypik.com/undervalued...'
 
             # Determine what action to take based on stock's current market price
             if company['price'] < buy_below:  # BUY
@@ -193,7 +226,7 @@ class Sammy(QMainWindow):
             RAW_RECORD['BB'] = buy_below
             RAW_RECORD['TP'] = target_price
             RAW_RECORD['action'] = action
-            RAW_RECORD['remarks'] = 'dailypik.com/undervalued-stocks-in-the-philippines-latest-list/'
+            RAW_RECORD['remarks'] = remarks
 
             # Transfer packed record to the table model
             RECORD.append(list(RAW_RECORD.values()))
@@ -203,8 +236,16 @@ class Sammy(QMainWindow):
             # Display market time
             self.statusbar.showMessage('Market price as of {}'.format(as_of))
 
+            # [] TODO: think how will you retrieve the new value in the main table
+            # # Update self.companies with 'remarks'
+            # raw_quote = {'symbol': stock_code,
+            #              'buy_below': buy_below,
+            #              'target_price': target_price,
+            #              'remarks': remarks}
+            # self.companies.append(raw_quote)
+
         except Exception as e:
-            self.statusbar.showMessage('Last request to API failed, try again.', 7000)
+            self.statusbar.showMessage('Last request to API failed, try again or press F5 to refresh', 7000)
             print(e)
 
     def closeEvent(self, e):

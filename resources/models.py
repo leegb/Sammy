@@ -4,10 +4,10 @@ from PyQt5.QtCore import (Qt,
                           QModelIndex,
                           QAbstractTableModel,  # for table
                           QAbstractListModel)   # for list
-from resources.constant import (RAW_RECORD,
-                                RECORD)
+from resources.constant import RECORD
 
 
+# [x] TODO: make the Remarks column editable
 class StockMonitoringTableModel(QAbstractTableModel):
 
     def __init__(self, parent=None):
@@ -22,11 +22,31 @@ class StockMonitoringTableModel(QAbstractTableModel):
 
     def data(self, index, role):
 
+        row = index.row()
+        col = index.column()
+
         if role == Qt.DisplayRole:
-            row = index.row()
-            col = index.column()
             value = RECORD[row][col]
             return value
+
+        if role == Qt.EditRole:
+            return RECORD[row][col]
+
+    def setData(self, index, value, role=Qt.DisplayRole):
+
+        if role == Qt.EditRole:
+            row = index.row()
+            col = index.column()
+            RECORD[row][col] = value
+            return True
+
+    def flags(self, index):
+
+        col = index.column()
+        if col == 6:    # Make the 'Remarks' column editable only
+            return Qt.ItemIsEditable | Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        else:
+            return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
     def rowCount(self, parent):
 
@@ -48,7 +68,7 @@ class StockListModel(QAbstractListModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB']
+        self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB', 'MPI']
         self.__stock_symbols.sort()
 
     def data(self, index, role):
