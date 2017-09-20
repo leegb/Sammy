@@ -187,20 +187,24 @@ class Sammy(QMainWindow):
     def on_refresh_action(self) -> None:
         """ Reload monitored companies. """
 
-        self.stockmonitoringTableView.clearSpans()
+        # Remove first the rows in the table
+        self.stock_table_model.removeRows(0, len(RECORD))
+        self.stockmonitoringTableView.setModel(self.stock_table_model)
 
-        for raw_quote in COMPANIES:
-            self.actions(raw_quote['symbol'],
-                         raw_quote['buy_below'],
-                         raw_quote['target_price'],
-                         raw_quote['remarks'])
-        print('Done refreshing')
+        # Reload the COMPANIES
+        # [] TODO: this thing crashes (not responding) after removing the rows in the table
+        # for raw_quote in COMPANIES:
+        #     self.actions(raw_quote['symbol'],
+        #                  raw_quote['buy_below'],
+        #                  raw_quote['target_price'],
+        #                  raw_quote['remarks'])
+        # print('Done refreshing')
 
     def on_aboutAction_clicked(self):
 
         QMessageBox.about(self, 'About Sammy', ABOUT)
 
-    # TODO: for cleaning, this is ugly
+    # [] TODO: for cleaning, this is ugly
     def actions(self, stock_code, buy_below, target_price, remarks):
 
         try:
@@ -233,7 +237,6 @@ class Sammy(QMainWindow):
             # Display market time
             self.statusbar.showMessage('Market price as of {}'.format(as_of))
 
-            # [x] TODO: think how will you retrieve the new value in the main table
             # Update self.companies with 'remarks'
             raw_quote = {'symbol': stock_code,
                          'buy_below': buy_below,

@@ -60,9 +60,17 @@ class StockMonitoringTableModel(QAbstractTableModel):
         return len(self.header)
 
     def insertRows(self, position, rows, parent=QModelIndex()):
+
         self.beginInsertRows(parent, position, position + rows - 1)
         # Still works!
         self.endInsertRows()
+        return True
+
+    def removeRows(self, position, rows, parent=QModelIndex()):
+
+        self.beginRemoveRows(parent, position, position + rows - 1)
+        # Perform removal of values in your internal list
+        self.endRemoveRows()
         return True
 
 
