@@ -17,9 +17,9 @@ from resources.constant import (ABOUT,
 import sammy
 
 
+# [] TODO: add a 'Refresh' feature
 # [] TODO: removing of stocks in the main table
-# [] TODO: editing of stocks in the table
-# [x] TODO: add a 'Refresh' feature
+# [x] TODO: editing of stocks in the table
 class Sammy(QMainWindow):
 
     def __init__(self, parent=None):
@@ -147,12 +147,12 @@ class Sammy(QMainWindow):
 
         # Reload previously monitored companies
         for raw_quote in companies:
-            self.actions(raw_quote['symbol'],
-                         raw_quote['buy_below'],
-                         raw_quote['target_price'],
-                         raw_quote['remarks'])
+            self.decide(raw_quote['symbol'],
+                        raw_quote['buy_below'],
+                        raw_quote['target_price'],
+                        raw_quote['remarks'])
 
-    # [] TODO: self.companies doesn't update when the user edit something in the table
+    # [x] TODO: self.companies doesn't update when the user edit something in the table
     def _write_settings(self):
 
         settings = QSettings('CodersGym', 'Sammy')
@@ -173,11 +173,13 @@ class Sammy(QMainWindow):
 
             raw_quote = {'symbol': symbol,
                          'buy_below': buy_below,
-                         'target_price': target_price}
+                         'target_price': target_price,
+                         'remarks': ''}
 
-            self.actions(raw_quote['symbol'],
-                         raw_quote['buy_below'],
-                         raw_quote['target_price'])
+            self.decide(raw_quote['symbol'],
+                        raw_quote['buy_below'],
+                        raw_quote['target_price'],
+                        raw_quote['remarks'])
 
     def on_edit_action(self):
 
@@ -193,11 +195,20 @@ class Sammy(QMainWindow):
 
         # Reload the COMPANIES
         # [] TODO: this thing crashes (not responding) after removing the rows in the table
-        # for raw_quote in COMPANIES:
-        #     self.actions(raw_quote['symbol'],
-        #                  raw_quote['buy_below'],
-        #                  raw_quote['target_price'],
-        #                  raw_quote['remarks'])
+        for raw_quote in COMPANIES:
+            self.decide(raw_quote['symbol'],
+                        raw_quote['buy_below'],
+                        raw_quote['target_price'],
+                        raw_quote['remarks'])
+        # self.actions(COMPANIES[0]['symbol'],
+        #              COMPANIES[0]['buy_below'],
+        #              COMPANIES[0]['target_price'],
+        #              COMPANIES[0]['remarks'])
+        # self.actions(COMPANIES[1]['symbol'],
+        #              COMPANIES[1]['buy_below'],
+        #              COMPANIES[1]['target_price'],
+        #              COMPANIES[1]['remarks'])
+
         # print('Done refreshing')
 
     def on_aboutAction_clicked(self):
@@ -205,7 +216,7 @@ class Sammy(QMainWindow):
         QMessageBox.about(self, 'About Sammy', ABOUT)
 
     # [] TODO: for cleaning, this is ugly
-    def actions(self, stock_code, buy_below, target_price, remarks):
+    def decide(self, stock_code, buy_below, target_price, remarks):
 
         try:
             # Perform query to Phisix API
