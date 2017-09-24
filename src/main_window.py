@@ -14,6 +14,7 @@ from resources.constant import (ABOUT,
                                 COMPANIES,
                                 RAW_RECORD,
                                 RECORD)
+# # [] TODO: add a new method in sammy that can retrieve all stocks in one query
 import sammy
 
 
@@ -32,6 +33,7 @@ class Sammy(QMainWindow):
         self._toolbar()
         self._statusbar()
         self.check_REST_API()
+        self._connections()
         self._read_settings()
 
     def _widgets(self):
@@ -67,6 +69,8 @@ class Sammy(QMainWindow):
         # Edit: actions
         self.editAction = QAction('&Edit', self,
                                   triggered=self.on_edit_action)
+        self.deleteAction = QAction('&Delete', self,
+                                    triggered=self.on_delete_action)
 
         # Tools: actions
         self.refreshAction = QAction('&Refresh', self,
@@ -107,11 +111,17 @@ class Sammy(QMainWindow):
         self.fileToolBar.addAction(self.newAction)
         self.addToolBar(Qt.LeftToolBarArea, self.fileToolBar)
 
-        # Edit: toolbar
-        self.editToolBar = QToolBar('Edit')
-        self.editToolBar.setMovable(False)
-        self.editToolBar.addAction(self.editAction)
-        self.addToolBar(Qt.LeftToolBarArea, self.editToolBar)
+        # # Edit: toolbar
+        # self.editToolBar = QToolBar('Edit')
+        # self.editToolBar.setMovable(False)
+        # self.editToolBar.addAction(self.editAction)
+        # self.addToolBar(Qt.LeftToolBarArea, self.editToolBar)
+
+        # Delete: toolbar
+        self.deleteToolBar = QToolBar('Delete')
+        self.deleteToolBar.setMovable(False)
+        self.deleteToolBar.addAction(self.deleteAction)
+        self.addToolBar(Qt.LeftToolBarArea, self.deleteToolBar)
 
         # Refresh: toolbar
         self.refreshToolBar = QToolBar('Refresh')
@@ -137,6 +147,10 @@ class Sammy(QMainWindow):
         except Exception as e:
             self.statusNormalLabel.setText('Offline')
             print(e)
+
+    def _connections(self):
+
+        self.stockmonitoringTableView.clicked.connect(self.on_stockmonitoringTableView_clicked)
 
     def _read_settings(self):
 
@@ -184,32 +198,83 @@ class Sammy(QMainWindow):
     def on_edit_action(self):
 
         print('TODO: editing?')
+        import sammy
+        all_stocks = sammy.stocks()
+        print(all_stocks)
 
-    # [] TODO: if no connection issues, the whole stock list in the table are re-appended and it crashes!
+    # [] TODO: you are struggling how to remove a single row in your table T_T
+    def on_delete_action(self):
+
+        index = self.stockmonitoringTableView.currentIndex()
+        row = index.row()
+        col = index.column()
+
+        # 2, 0
+        print('cell:', row, col)
+        print(len(RECORD))
+        # Remove selected row base on current selected cell
+        self.stock_table_model.removeRows(row, len(RECORD))
+        self.stockmonitoringTableView.setModel(self.stock_table_model)
+
+        print('delete {0} {1}?'.format(row, col))
+
+    # [] TODO: successfully packaging the output in the terminal, needs to show it on the main table
     def on_refresh_action(self) -> None:
         """ Reload monitored companies. """
+
+        # [x] TODO: remove records in the table
+        # [x] TODO: get all_stocks
+
+        import sammy
+        all_stocks = sammy.stocks()
+
+        print(COMPANIES)
 
         # Remove first the rows in the table
         self.stock_table_model.removeRows(0, len(RECORD))
         self.stockmonitoringTableView.setModel(self.stock_table_model)
+        RECORD.clear()
 
-        # Reload the COMPANIES
-        # [] TODO: this thing crashes (not responding) after removing the rows in the table
+        # nested for loop
         for raw_quote in COMPANIES:
-            self.decide(raw_quote['symbol'],
-                        raw_quote['buy_below'],
-                        raw_quote['target_price'],
-                        raw_quote['remarks'])
-        # self.actions(COMPANIES[0]['symbol'],
-        #              COMPANIES[0]['buy_below'],
-        #              COMPANIES[0]['target_price'],
-        #              COMPANIES[0]['remarks'])
-        # self.actions(COMPANIES[1]['symbol'],
-        #              COMPANIES[1]['buy_below'],
-        #              COMPANIES[1]['target_price'],
-        #              COMPANIES[1]['remarks'])
+            for stock in all_stocks['stock']:
+                if raw_quote['symbol'] == stock['symbol']:
+                    # Parse to get necessary values
+                    company = stock['name']
+                    symbol = stock['symbol']
+                    price = stock['price']['amount']
+                    change = stock['percent_change']
 
-        # print('Done refreshing')
+                    # Determine what action to follow
+                    if price < raw_quote['buy_below']:
+                        action = 'Buy'
+                    elif raw_quote['buy_below'] <= price < raw_quote['target_price']:
+                        action = 'Hold'
+                    elif price >= raw_quote['target_price']:
+                        action = 'Sell'
+
+                    # Package retrieved values
+                    RAW_RECORD['company'] = company
+                    RAW_RECORD['symbol'] = symbol
+                    RAW_RECORD['price'] = '{0} ({1})'.format(price, change)
+                    RAW_RECORD['BB'] = raw_quote['buy_below']
+                    RAW_RECORD['TP'] = raw_quote['target_price']
+                    RAW_RECORD['action'] = action
+                    RAW_RECORD['remarks'] = raw_quote['remarks']
+
+                    # Transfer packed record to the table model
+                    RECORD.append(list(RAW_RECORD.values()))
+                    self.stock_table_model.insertRows(len(RECORD), 1)
+                    self.stockmonitoringTableView.setModel(self.stock_table_model)
+
+                    print(RAW_RECORD)
+
+        print('refreshed!')
+
+    def on_stockmonitoringTableView_clicked(self):
+
+        #print('cell')
+        pass
 
     def on_aboutAction_clicked(self):
 

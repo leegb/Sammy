@@ -68,6 +68,7 @@ class StockMonitoringTableModel(QAbstractTableModel):
 
     def removeRows(self, position, rows, parent=QModelIndex()):
 
+        # position: 1, rows: 1
         self.beginRemoveRows(parent, position, position + rows - 1)
         # Perform removal of values in your internal list
         self.endRemoveRows()
@@ -79,7 +80,7 @@ class StockListModel(QAbstractListModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB', 'MPI']
+        self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB', 'MPI', 'ALI']
         self.__stock_symbols.sort()
 
     def data(self, index, role):
