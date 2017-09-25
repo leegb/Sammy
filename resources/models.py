@@ -5,7 +5,8 @@ from PyQt5.QtCore import (Qt,
                           QAbstractTableModel,  # for table
                           QAbstractListModel)   # for list
 from resources.constant import (COMPANIES,
-                                RECORD)
+                                RECORD,
+                                PSE_SYM)
 
 
 # [x] TODO: make the Remarks column editable
@@ -80,7 +81,7 @@ class StockListModel(QAbstractListModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.__stock_symbols = ['FGEN', 'MEG', 'COSCO', 'MBT', 'CEB', 'MPI', 'ALI']
+        self.__stock_symbols = PSE_SYM
         self.__stock_symbols.sort()
 
     def data(self, index, role):
