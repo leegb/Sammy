@@ -4,7 +4,7 @@ Sammy
 
 Sammy is a monitoring tool for stock market investors using the _Flipping_ method. It uses the Simple PSEi RESTful API to get the latest stock quote in the Philippine Stock Exchange Index (PSEi).
 
-> _The main goal of **Sammy** is to simply answer the basic question typical investors frequently ask, "what stocks to buy today?"_
+> _The main goal of **Sammy** is to simply answer the basic question typical flipping investors frequently ask, "what stocks to buy today?"_
 
 Feature(s)
 ---
