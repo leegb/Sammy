@@ -222,54 +222,29 @@ class Sammy(QMainWindow):
     def on_refresh_action(self) -> None:
         """ Reload monitored companies. """
 
-        # [x] TODO: remove records in the table
-        # [x] TODO: get all_stocks
+        try:
+            import sammy
+            all_stocks = sammy.stocks()
 
-        import sammy
-        all_stocks = sammy.stocks()
+            # Clear the table first
+            self.stock_table_model.removeRows(0, len(RECORD))
+            self.stockmonitoringTableView.setModel(self.stock_table_model)
+            RECORD.clear()
 
-        print(COMPANIES)
+            # nested for loop
+            for user_stock in COMPANIES:
+                for stock in all_stocks['stock']:
+                    if user_stock['symbol'] == stock['symbol']:
+                        # Transfer packed record to the table model
+                        RECORD.append(list(self.parse(user_stock, stock)))
+                        self.stock_table_model.insertRows(len(RECORD), 1)
+                        self.stockmonitoringTableView.setModel(self.stock_table_model)
+                        # Display status of refresh
+                        self.statusbar.showMessage('Market price as of {0}'.format(all_stocks['as_of']), 7000)
 
-        # Remove first the rows in the table
-        self.stock_table_model.removeRows(0, len(RECORD))
-        self.stockmonitoringTableView.setModel(self.stock_table_model)
-        RECORD.clear()
-
-        # nested for loop
-        for raw_quote in COMPANIES:
-            for stock in all_stocks['stock']:
-                if raw_quote['symbol'] == stock['symbol']:
-                    # Parse to get necessary values
-                    company = stock['name']
-                    symbol = stock['symbol']
-                    price = stock['price']['amount']
-                    change = stock['percent_change']
-
-                    # Determine what action to follow
-                    if price < raw_quote['buy_below']:
-                        action = 'Buy'
-                    elif raw_quote['buy_below'] <= price < raw_quote['target_price']:
-                        action = 'Hold'
-                    elif price >= raw_quote['target_price']:
-                        action = 'Sell'
-
-                    # Package retrieved values
-                    RAW_RECORD['company'] = company
-                    RAW_RECORD['symbol'] = symbol
-                    RAW_RECORD['price'] = '{0} ({1})'.format(price, change)
-                    RAW_RECORD['BB'] = raw_quote['buy_below']
-                    RAW_RECORD['TP'] = raw_quote['target_price']
-                    RAW_RECORD['action'] = action
-                    RAW_RECORD['remarks'] = raw_quote['remarks']
-
-                    # Transfer packed record to the table model
-                    RECORD.append(list(RAW_RECORD.values()))
-                    self.stock_table_model.insertRows(len(RECORD), 1)
-                    self.stockmonitoringTableView.setModel(self.stock_table_model)
-
-                    print(RAW_RECORD)
-
-        print('refreshed!')
+        except Exception as e:
+            self.statusbar.showMessage('Unable to refresh, check your connection', 7000)
+            print(e)
 
     def on_stockmonitoringTableView_clicked(self):
 
@@ -288,21 +263,13 @@ class Sammy(QMainWindow):
             company = sammy.stock(stock_code)
             as_of = sammy.as_of()
 
-            # Determine what action to take based on stock's current market price
-            if company['price'] < buy_below:  # BUY
-                action = 'Buy'
-            elif buy_below <= company['price'] < target_price:  # HOLD
-                action = 'Hold'
-            elif company['price'] >= target_price:  # SELL
-                action = 'Sell'
-
             # Packaging values in ordered
             RAW_RECORD['company'] = company['company']
             RAW_RECORD['symbol'] = company['symbol']
             RAW_RECORD['price'] = '{0} ({1})'.format(company['price'], company['change'])
             RAW_RECORD['BB'] = buy_below
             RAW_RECORD['TP'] = target_price
-            RAW_RECORD['action'] = action
+            RAW_RECORD['action'] = self.determine_action(company['price'], buy_below, target_price)
             RAW_RECORD['remarks'] = remarks
 
             # Transfer packed record to the table model
@@ -323,6 +290,48 @@ class Sammy(QMainWindow):
         except Exception as e:
             self.statusbar.showMessage('Last request to API failed, try again or press F5 to refresh', 7000)
             print(e)
+
+    def determine_action(self, market_price: float, buy_below: float, target_price: float) -> str:
+        """ Determine user action to follow.
+
+            Return 'Buy', 'Hold', or 'Sell'
+        """
+
+        if market_price < buy_below:
+            return 'Buy'
+        elif buy_below <= market_price < target_price:
+            return 'Hold'
+        elif market_price >= target_price:
+            return 'Sell'
+
+    def parse(self, user_stock: dict, stock: dict) -> dict:
+        """ Accept user_stock and stock to parse values.
+
+            Return ordered dict RAW_RECORD.
+        """
+
+        if user_stock['symbol'] == stock['symbol']:
+            # Parse to get necessary values
+            company = stock['name']
+            symbol = stock['symbol']
+            current_price = stock['price']['amount']
+            change = stock['percent_change']
+            buy_below = user_stock['buy_below']
+            target_price = user_stock['target_price']
+            remarks = user_stock['remarks']
+
+            # Package retrieved values
+            RAW_RECORD['company'] = company
+            RAW_RECORD['symbol'] = symbol
+            RAW_RECORD['price'] = '{0} ({1})'.format(current_price,
+                                                     change)
+            RAW_RECORD['BB'] = buy_below
+            RAW_RECORD['TP'] = target_price
+            RAW_RECORD['action'] = self.determine_action(current_price,
+                                                         buy_below,
+                                                         target_price)
+            RAW_RECORD['remarks'] = remarks
+            return RAW_RECORD.values()
 
     def closeEvent(self, e):
 
