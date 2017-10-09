@@ -1,5 +1,6 @@
 # Main UI
 
+from json.decoder import JSONDecodeError
 from PyQt5.QtCore import (Qt,
                           QSettings)
 from PyQt5.QtGui import QKeySequence
@@ -14,7 +15,7 @@ from resources.constant import (ABOUT,
                                 COMPANIES,
                                 RAW_RECORD,
                                 RECORD)
-# # [] TODO: add a new method in sammy that can retrieve all stocks in one query
+# [x] TODO: add a new method in sammy that can retrieve all stocks in one query
 import sammy
 
 
@@ -146,7 +147,7 @@ class Sammy(QMainWindow):
             print(timestamp)
         except Exception as e:
             self.statusNormalLabel.setText('Offline')
-            print(e)
+            print('self.check_REST_API error', type(e))
 
     def _connections(self):
 
@@ -218,7 +219,7 @@ class Sammy(QMainWindow):
 
         print('delete {0} {1}?'.format(row, col))
 
-    # [] TODO: successfully packaging the output in the terminal, needs to show it on the main table
+    # [] TODO: when an error occurred and no stocks has been retrieved, last known value is recovered if exited.
     def on_refresh_action(self) -> None:
         """ Reload monitored companies. """
 
@@ -236,15 +237,15 @@ class Sammy(QMainWindow):
                 for stock in all_stocks['stock']:
                     if user_stock['symbol'] == stock['symbol']:
                         # Transfer packed record to the table model
-                        RECORD.append(list(self.parse(user_stock, stock)))
+                        RECORD.append(self.parse(user_stock, stock))
                         self.stock_table_model.insertRows(len(RECORD), 1)
                         self.stockmonitoringTableView.setModel(self.stock_table_model)
                         # Display status of refresh
-                        self.statusbar.showMessage('Market price as of {0}'.format(all_stocks['as_of']), 7000)
+                        self.statusbar.showMessage(f'Market price as of {all_stocks["as_of"]}', 7000)
 
         except Exception as e:
             self.statusbar.showMessage('Unable to refresh, check your connection', 7000)
-            print(e)
+            print('self.on_refresh_action error', type(e))   # Errors catched: JSONDecodeError, KeyError
 
     def on_stockmonitoringTableView_clicked(self):
 
@@ -266,7 +267,7 @@ class Sammy(QMainWindow):
             # Packaging values in ordered
             RAW_RECORD['company'] = company['company']
             RAW_RECORD['symbol'] = company['symbol']
-            RAW_RECORD['price'] = '{0} ({1})'.format(company['price'], company['change'])
+            RAW_RECORD['price'] = f'{company["price"]} ({company["change"]})'
             RAW_RECORD['BB'] = buy_below
             RAW_RECORD['TP'] = target_price
             RAW_RECORD['action'] = self.determine_action(company['price'], buy_below, target_price)
@@ -278,7 +279,7 @@ class Sammy(QMainWindow):
             self.stockmonitoringTableView.setModel(self.stock_table_model)
 
             # Display market time
-            self.statusbar.showMessage('Market price as of {}'.format(as_of))
+            self.statusbar.showMessage(f'Market price as of {as_of}')
 
             # Update self.companies with 'remarks'
             raw_quote = {'symbol': stock_code,
@@ -289,7 +290,7 @@ class Sammy(QMainWindow):
 
         except Exception as e:
             self.statusbar.showMessage('Last request to API failed, try again or press F5 to refresh', 7000)
-            print(e)
+            print('self.decide() error', type(e))     # Errors catched: ValueError, ConnectionError
 
     def determine_action(self, market_price: float, buy_below: float, target_price: float) -> str:
         """ Determine user action to follow.
@@ -304,10 +305,10 @@ class Sammy(QMainWindow):
         elif market_price >= target_price:
             return 'Sell'
 
-    def parse(self, user_stock: dict, stock: dict) -> dict:
+    def parse(self, user_stock: dict, stock: dict) -> list:
         """ Accept user_stock and stock to parse values.
 
-            Return ordered dict RAW_RECORD.
+            Return RAW_RECORD.values() as list.
         """
 
         if user_stock['symbol'] == stock['symbol']:
@@ -323,15 +324,14 @@ class Sammy(QMainWindow):
             # Package retrieved values
             RAW_RECORD['company'] = company
             RAW_RECORD['symbol'] = symbol
-            RAW_RECORD['price'] = '{0} ({1})'.format(current_price,
-                                                     change)
+            RAW_RECORD['price'] = f'{current_price} ({change})'
             RAW_RECORD['BB'] = buy_below
             RAW_RECORD['TP'] = target_price
             RAW_RECORD['action'] = self.determine_action(current_price,
                                                          buy_below,
                                                          target_price)
             RAW_RECORD['remarks'] = remarks
-            return RAW_RECORD.values()
+            return list(RAW_RECORD.values())
 
     def closeEvent(self, e):
 
