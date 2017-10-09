@@ -6,6 +6,7 @@ from PyQt5.QtCore import (Qt,
                           QAbstractListModel)   # for list
 from resources.constant import (COMPANIES,
                                 RECORD,
+                                SAMMY_TABLE_HEADERS,
                                 PSE_SYM)
 
 
@@ -14,7 +15,7 @@ class StockMonitoringTableModel(QAbstractTableModel):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.header = ['Company', 'Symbol', 'Market Price', 'Buy Below', 'Target Price', 'Action', 'Remarks']
+        self.header = SAMMY_TABLE_HEADERS
 
     def headerData(self, section, orientation, role):
 
